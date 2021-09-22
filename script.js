@@ -22,11 +22,19 @@ export let options = {
       iterations: 1,
     },
     data_query_run_flow: {
-      executor: 'per-vu-iterations',
       exec: 'dataQueryRunFlow',
-      vus: 1000,
-      iterations: 1,
-      maxDuration: '10m',
+      // executor: 'per-vu-iterations',
+      // vus: 1000,
+      // iterations: 1,
+      // maxDuration: '10m',
+
+      executor: 'ramping-vus',
+      startVUs: 0,
+      stages: [
+        { duration: '30s', target: 1000 },
+        { duration: '5s', target: 0 },
+      ],
+      gracefulRampDown: '0s',
     }
   }
 };
@@ -108,6 +116,33 @@ function mysqlConfig() {
   ];
 }
 
+
+function pgConfig() {
+  return [
+    {
+      key: 'host',
+      value: __ENV.PG_HOST,
+    },
+    {
+      key: 'port',
+      value: __ENV.PG_PORT,
+    },
+    {
+      key: 'database',
+      value: __ENV.PG_DB,
+    },
+    {
+      key: 'username',
+      value: __ENV.PG_USER,
+    },
+    {
+      key: 'password',
+      value: __ENV.PG_PASSWORD,
+      encrypted: true,
+    },
+  ];
+}
+
 function setupApp(authToken) {
   // create app
   const headers = {
@@ -128,9 +163,9 @@ function setupApp(authToken) {
   // create data source
   payload = JSON.stringify({
     app_id: appID,
-    name: 'MySQL',
-    kind: 'mysql',
-    options: mysqlConfig(),
+    name: 'PostgreSQL',
+    kind: 'postgresql',
+    options: pgConfig(),
   });
   url = BASE_URL + '/data_sources';
   response = http.post(url, payload, headers);
@@ -141,8 +176,8 @@ function setupApp(authToken) {
   // create data query
   payload = JSON.stringify({
     app_id: appID,
-    name: 'mysqlloadtest',
-    kind: 'mysql',
+    name: 'postgresloadtest',
+    kind: 'postgresql',
     options: {
       query: __ENV.DATA_QUERY,
       runOnPageLoad: true,
@@ -285,9 +320,9 @@ export function sanityFlow({authToken}) {
         };
         const payload = JSON.stringify({
           app_id: APP_ID,
-          name: 'MySQL',
-          kind: 'mysql',
-          options: mysqlConfig(),
+          name: 'PostgreSQL',
+          kind: 'postgresql',
+          options: pgConfig(),
         });
         const url = BASE_URL + '/data_sources';
         let response = http.post(url, payload, headers);
@@ -377,13 +412,8 @@ export function dataQueryRunFlow({authToken, dataQueryRun}) {
     });
 
 
-    // console.log(JSON.stringify(authToken))
-    // console.log(JSON.stringify(dataQueryRun))
-
     const url = BASE_URL + `/data_queries/${dataQueryRun.dataQueryID}/run`;
     let response = http.post(url, payload, headers);
-
-    // console.log(response.body);
 
     check(response, {
       'data query run returns 201': (r) => r.status === 201,
