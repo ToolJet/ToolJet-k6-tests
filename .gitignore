@@ -1,0 +1,34 @@
+# Test Results
+results/
+*.log
+*.json
+!package.json
+
+# Environment Files
+.env
+.env.local
+.env.production
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if using npm for k6 extensions)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# K6 Cloud results
+k6-cloud-*
