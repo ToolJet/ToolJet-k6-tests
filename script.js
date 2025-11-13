@@ -387,7 +387,8 @@ export function dataQueryRunFlow({authToken, dataQueryRun}) {
 
     check(response, {
       'data query run returns 201': (r) => r.status === 201,
-      'data query run returns query result': (r) => r.json().data !== [],
+   'query returns non-empty result': (r) => Array.isArray(r.json().data) && r.json().data.length > 0,
+
     });
 
     sleep(SLEEP_DURATION);
